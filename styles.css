@@ -1,0 +1,56 @@
+* {
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  color: #000;
+  background-color: aquamarine;
+  font-size: 25px;
+  font-weight: 200;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#tablero {
+  height: 90vh;
+  width: 90vw;
+  display: grid;
+  grid-template-columns: repeat(10, 10fr);
+  grid-template-rows: repeat(10, 10fr);
+  border: #000 solid 2px;
+}
+
+.cuadro {
+  background-color: greenyellow;
+  border: #000 solid 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#perdido {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-color: red;
+}
+
+#ganado {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  background-color: greenyellow;
+}
