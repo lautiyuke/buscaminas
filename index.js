@@ -6,28 +6,16 @@ class Casilla {
 	}
 }
 
-function troleaste() {
-	let tablero = document.getElementById("tablero");
+function ocultarTablero() {
+	const tablero = document.getElementById("tablero");
 	tablero.style.display = "none";
-
-	let perdido = document.createElement("div");
-	perdido.id = "perdido";
-	perdido.innerText = "PERDISTE";
-	document.body.appendChild(perdido);
-
-	setTimeout(() => {
-		location.reload();
-	}, 4000);
 }
 
-function ganaste() {
-	let tablero = document.getElementById("tablero");
-	tablero.style.display = "none";
-
-	let ganado = document.createElement("div");
-	ganado.id = "ganado";
-	ganado.innerText = "GANASTE";
-	document.body.appendChild(ganado);
+function mostrarResultado(mensaje) {
+	const resultado = document.createElement("div");
+	resultado.id = "resultado";
+	resultado.innerText = mensaje;
+	document.body.appendChild(resultado);
 
 	setTimeout(() => {
 		location.reload();
@@ -35,17 +23,11 @@ function ganaste() {
 }
 
 function dropBombas() {
-	let posBombas = [];
-	let i = 10;
-
-	while (i !== 0) {
-		let num = getRandomInt(99);
-		if (!posBombas.includes(num)) {
-			posBombas.push(num);
-			i--;
-		}
+	const posBombas = new Set();
+	while (posBombas.size < 10) {
+		posBombas.add(getRandomInt(100));
 	}
-	return posBombas;
+	return Array.from(posBombas);
 }
 
 function crearTablero() {
@@ -54,84 +36,43 @@ function crearTablero() {
 	document.body.appendChild(tablero);
 }
 
-function checkBombas(casillas, x, y) {
+function checkBombas(casillas, x, y, posBombas) {
 	let cont = 0;
-	let contA = 0;
-	let contB = 0;
-	let cA = 3;
-	let cB = 3;
-
-	for (let a = x - 1; contA < cA; a++) {
-		if (a > 9) {
-			a = x - 1;
-			contA++;
-			continue;
-		}
-		for (let b = y - 1; contB < cB; b++) {
-			if (a < 0) {
-				a = 0;
-				cA--;
-			}
-			if (b < 0) {
-				b = 0;
-				cB--;
-			}
-			if (b > 9) {
-				b = y - 1;
-				contB++;
-				continue;
-			}
-			if (posBombas.includes(casillas[a][b].id)) {
+	for (let a = Math.max(0, x - 1); a <= Math.min(9, x + 1); a++) {
+		for (let b = Math.max(0, y - 1); b <= Math.min(9, y + 1); b++) {
+			const casillaId = casillas[a][b].id;
+			if (posBombas.includes(casillaId)) {
 				cont++;
 			}
-			contB++;
 		}
-		contA++;
-		contB = 0;
-		cB = 3;
 	}
 	return cont;
 }
 
 function mostrarCasillasVacias(casillas, x, y) {
-	let contA = 0;
-	let contB = 0;
-	let cA = 3;
-	let cB = 3;
+	const visitadas = new Set();
+	const faltantes = [{ x, y }];
 
-	for (let a = x - 1; contA < cA; a++) {
-		if (a > 9) {
-			a = x - 1;
-			contA++;
-			continue;
-		}
-		for (let b = y - 1; contB < cB; b++) {
-			if (a < 0) {
-				a = 0;
-				cA--;
-			}
-			if (b < 0) {
-				b = 0;
-				cB--;
-			}
-			if (b > 9) {
-				b = y - 1;
-				contB++;
-				continue;
-			}
-			let cuadro = document.getElementById(casillas[a][b].id);
-			if (!cuadro.innerText && cuadro.style.backgroundColor !== "#7bb426") {
-				cuadro.innerText = checkBombas(casillas, a, b);
-				cuadro.style.backgroundColor = "#7bb426";
-				if (cuadro.innerText === "0") {
-					mostrarCasillasVacias(casillas, a, b);
+	while (faltantes.length > 0) {
+		const { x, y } = faltantes.pop();
+		visitadas.add(`${x}-${y}`);
+
+		for (let a = Math.max(0, x - 1); a <= Math.min(9, x + 1); a++) {
+			for (let b = Math.max(0, y - 1); b <= Math.min(9, y + 1); b++) {
+				const casilla = casillas[a][b];
+				const casillaId = casilla.id;
+				const casillaKey = `${a}-${b}`;
+				if (!visitadas.has(casillaKey) && !casilla.descubierta) {
+					casilla.descubierta = true;
+					const cuadro = document.getElementById(casillaId);
+					cuadro.innerText = checkBombas(casillas, a, b, posBombas);
+					cuadro.style.backgroundColor = "#7bb426";
+					if (cuadro.innerText === "0") {
+						faltantes.push({ x: a, y: b });
+					}
 				}
 			}
-			contB++;
 		}
-		contA++;
-		contB = 0;
-		cB = 3;
 	}
 }
 
@@ -148,68 +89,58 @@ function bandera(cuadro) {
 }
 
 function mostrarBombas(casillas, posBombas) {
-	let i = 0;
-
 	for (let x = 0; x < 10; x++) {
 		for (let y = 0; y < 10; y++) {
-			if (posBombas.includes(casillas[x][y].id)) {
-				let cuadro = document.getElementById(i);
+			const casillaId = casillas[x][y].id;
+			if (posBombas.includes(casillaId)) {
+				const cuadro = document.getElementById(casillaId);
 				cuadro.innerText = "💣";
 				cuadro.style.backgroundColor = "red";
 			}
-			i++;
 		}
 	}
 }
 
 crearTablero();
 
-let casillas = [];
-for (let x = 0; x < 10; x++) {
-	casillas[x] = [];
-}
-
-let posBombas = dropBombas();
-//console.log(posBombas);
-
-let clickeadas = [];
-let todas = [];
-let num = 0;
+const casillas = Array.from({ length: 10 }, () => Array.from({ length: 10 }));
+const posBombas = dropBombas();
 
 for (let x = 0; x < 10; x++) {
 	for (let y = 0; y < 10; y++) {
-		casillas[x][y] = new Casilla(1, 1, num);
-		if (!todas.includes(num)) {
-			todas.push(num);
-		}
-		let cuadro = document.createElement("div");
-		cuadro.id = num;
-		num++;
+		const casillaId = x * 10 + y;
+		casillas[x][y] = new Casilla(false, 1, casillaId);
+		const cuadro = document.createElement("div");
+		cuadro.id = casillaId;
 		cuadro.className = "cuadro";
-		clickeadas.push(cuadro.id);
 
 		cuadro.addEventListener("mousedown", (event) => {
-			if (posBombas.includes(casillas[x][y].id)) {
-				if (event.button === 0) {
+			event.preventDefault();
+			const casilla = casillas[x][y];
+			if (casilla.descubierta) return;
+			if (event.button === 0) {
+				if (posBombas.includes(casillaId)) {
 					mostrarBombas(casillas, posBombas);
 					setTimeout(() => {
-						troleaste();
+						mostrarResultado("PERDISTE");
 					}, 2000);
-				} else if (event.button === 2) {
-					bandera(cuadro);
-				}
-			} else {
-				if (event.button === 0) {
-					cuadro.innerText = checkBombas(casillas, x, y);
+				} else {
+					casilla.descubierta = true;
+					cuadro.innerText = checkBombas(casillas, x, y, posBombas);
 					cuadro.style.backgroundColor = "#7bb426";
 					if (cuadro.innerText === "0") {
 						mostrarCasillasVacias(casillas, x, y);
 					}
-				} else if (event.button === 2) {
-					bandera(cuadro);
 				}
+			} else if (event.button === 2) {
+				bandera(cuadro);
 			}
 		});
+
+		cuadro.addEventListener("contextmenu", (event) => {
+			event.preventDefault();
+		});
+
 		tablero.appendChild(cuadro);
 	}
 }
