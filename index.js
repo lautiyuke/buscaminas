@@ -15,7 +15,8 @@ function mostrarResultado(mensaje) {
 	const resultado = document.createElement("div");
 	resultado.id = "resultado";
 	resultado.innerText = mensaje;
-	document.body.appendChild(resultado);
+	const padre = document.getElementById("gameContainer");
+	padre.appendChild(resultado);
 
 	setTimeout(() => {
 		location.reload();
@@ -33,7 +34,8 @@ function dropBombas() {
 function crearTablero() {
 	const tablero = document.createElement("div");
 	tablero.id = "tablero";
-	document.body.appendChild(tablero);
+	const padre = document.getElementById("gameContainer");
+	padre.appendChild(tablero);
 }
 
 function checkBombas(casillas, x, y, posBombas) {
